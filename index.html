@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uncover Your Speaking Pattern</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg1: #C4C9F0;
+    --bg2: #C9AEED;
+    --bg3: #E8C6E8;
+    --bg4: #C8DFF5;
+    --plum: #1E1B2E;
+    --plum2: #2A2540;
+    --terra: #E8845C;
+    --terra2: #F0A070;
+    --parchment: #FAF6F1;
+    --purple: #7C6BC4;
+    --near-black: #1A1A2E;
+    --mid-purple: #9B8EC4;
+    --peach: #F5CBA7;
+    --lavender: #D7C4F0;
+    --mint: #ADE8D4;
+    --white: #FFFFFF;
+    --font-serif: Georgia, 'Times New Roman', serif;
+    --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 30%, var(--bg3) 60%, var(--bg4) 100%);
+    min-height: 100vh;
+    color: var(--near-black);
+    overflow-x: hidden;
+  }
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  #intro { align-items: center; justify-content: center; padding: 3rem 1.5rem; text-align: center; position: relative; }
+
+  .intro-badge { display: inline-block; background: var(--plum); color: var(--terra); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 6px 16px; border-radius: 100px; margin-bottom: 1.5rem; }
+
+  .intro-headline { font-family: var(--font-serif); font-size: clamp(2rem, 6vw, 3.6rem); font-weight: 700; line-height: 1.1; color: var(--near-black); max-width: 700px; margin: 0 auto 1.5rem; }
+
+  .intro-headline em { font-style: italic; color: var(--plum); }
+
+  .intro-sub { font-size: 16px; line-height: 1.7; color: var(--near-black); max-width: 540px; margin: 0 auto 2rem; opacity: 0.8; }
+
+  .meta-row { display: flex; gap: 1rem; justify-content: center; margin-bottom: 2.5rem; flex-wrap: wrap; }
+
+  .meta-pill { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.8); border-radius: 100px; padding: 6px 14px; font-size: 13px; font-weight: 500; color: var(--near-black); }
+
+  .meta-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--terra); flex-shrink: 0; }
+
+  .btn-primary { display: inline-flex; align-items: center; gap: 10px; background: var(--plum); color: var(--parchment); font-family: var(--font-sans); font-size: 16px; font-weight: 500; padding: 16px 36px; border-radius: 100px; border: none; cursor: pointer; transition: transform 0.15s, background 0.15s; }
+
+  .btn-primary:hover { background: var(--plum2); transform: translateY(-2px); }
+
+  .deco-circles { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; overflow: hidden; }
+
+  .deco-circle { position: absolute; border-radius: 50%; opacity: 0.25; }
+
+  #quiz { padding: 0; flex-direction: column; }
+
+  .quiz-top { background: var(--plum); padding: 1.25rem 1.5rem 1.5rem; position: sticky; top: 0; z-index: 10; }
+
+  .progress-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+
+  .progress-label span { font-size: 12px; font-weight: 500; color: rgba(250,246,241,0.6); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .progress-label strong { font-size: 14px; font-weight: 600; color: var(--terra); }
+
+  .progress-track { height: 4px; background: rgba(255,255,255,0.12); border-radius: 2px; overflow: hidden; }
+
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--terra), var(--terra2)); border-radius: 2px; transition: width 0.4s cubic-bezier(0.4,0,0.2,1); }
+
+  .quiz-body { flex: 1; padding: 2rem 1.5rem 3rem; max-width: 680px; width: 100%; margin: 0 auto; }
+
+  .q-number { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid-purple); margin-bottom: 0.75rem; }
+
+  .q-question { font-family: var(--font-serif); font-size: clamp(1.2rem, 3.5vw, 1.65rem); font-weight: 700; line-height: 1.3; color: var(--near-black); margin-bottom: 2rem; }
+
+  .answers-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+
+  .answer-btn { display: flex; align-items: flex-start; gap: 1rem; padding: 1rem 1.25rem; background: rgba(255,255,255,0.6); border: 1.5px solid rgba(255,255,255,0.8); border-radius: 14px; cursor: pointer; text-align: left; font-family: var(--font-sans); font-size: 15px; color: var(--near-black); line-height: 1.5; transition: all 0.15s; width: 100%; }
+
+  .answer-btn:hover { background: rgba(255,255,255,0.85); border-color: var(--mid-purple); transform: translateX(4px); }
+
+  .answer-btn.selected { background: var(--plum); border-color: var(--plum); color: var(--parchment); transform: translateX(6px); }
+
+  .answer-btn.selected .answer-ltr { background: var(--terra); color: var(--plum); }
+
+  .answer-ltr { min-width: 28px; height: 28px; background: rgba(124,107,196,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--purple); flex-shrink: 0; margin-top: 1px; transition: all 0.15s; }
+
+  .next-row { display: flex; justify-content: flex-end; margin-top: 2rem; }
+
+  .btn-next { display: inline-flex; align-items: center; gap: 8px; background: var(--plum); color: var(--parchment); font-family: var(--font-sans); font-size: 15px; font-weight: 500; padding: 13px 28px; border-radius: 100px; border: none; cursor: pointer; opacity: 0; pointer-events: none; transition: all 0.25s; }
+
+  .btn-next.visible { opacity: 1; pointer-events: all; }
+
+  .btn-next:hover { background: var(--plum2); }
+
+  #result { flex-direction: column; align-items: center; padding: 0; }
+
+  .result-hero { width: 100%; background: var(--plum); padding: 3rem 1.5rem 4rem; text-align: center; position: relative; overflow: hidden; }
+
+  .result-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--terra); margin-bottom: 1rem; }
+
+  .result-label { font-size: 12px; font-weight: 500; color: rgba(250,246,241,0.5); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+
+  .result-pattern-name { font-family: var(--font-serif); font-size: clamp(2rem, 7vw, 4rem); font-weight: 700; color: var(--parchment); line-height: 1.1; margin-bottom: 0.5rem; }
+
+  .result-secondary-wrap { margin-top: 1rem; display: none; }
+  .result-secondary-wrap.visible { display: block; }
+
+  .result-secondary-name { font-family: var(--font-serif); font-size: clamp(1.2rem, 4vw, 1.8rem); font-weight: 700; color: var(--terra2); line-height: 1.2; }
+
+  .result-body { width: 100%; max-width: 680px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+  .pattern-intro-text { font-size: 15px; line-height: 1.7; color: var(--near-black); opacity: 0.7; margin-bottom: 2rem; font-style: italic; }
+
+  .result-section { margin-bottom: 1.5rem; }
+
+  .result-section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid-purple); margin-bottom: 0.75rem; }
+
+  .behavior-box, .gap-box { background: rgba(255,255,255,0.55); border: 1.5px solid rgba(255,255,255,0.8); border-radius: 14px; padding: 1.25rem 1.5rem; font-size: 15px; line-height: 1.7; color: var(--near-black); }
+
+  .bridge-box { background: var(--plum); border-radius: 14px; padding: 1.5rem; margin-bottom: 1.5rem; }
+
+  .bridge-box .result-section-label { color: var(--terra); }
+
+  .bridge-text { font-size: 15px; line-height: 1.7; color: var(--parchment); }
+
+  .cta-box { background: linear-gradient(135deg, var(--terra) 0%, var(--terra2) 100%); border-radius: 18px; padding: 2rem 1.5rem; text-align: center; margin-top: 2.5rem; }
+
+  .cta-headline { font-family: var(--font-serif); font-size: clamp(1.3rem, 4vw, 1.9rem); font-weight: 700; color: var(--plum); margin-bottom: 0.75rem; line-height: 1.2; }
+
+  .cta-sub { font-size: 14px; line-height: 1.6; color: rgba(30,27,46,0.8); margin-bottom: 1.5rem; }
+
+  .btn-cta { display: inline-flex; align-items: center; gap: 10px; background: var(--plum); color: var(--parchment); font-family: var(--font-sans); font-size: 15px; font-weight: 500; padding: 14px 30px; border-radius: 100px; border: none; cursor: pointer; transition: transform 0.15s; text-decoration: none; }
+
+  .btn-cta:hover { transform: translateY(-2px); }
+
+  .retake-btn { display: block; text-align: center; margin-top: 1.5rem; font-size: 13px; color: var(--mid-purple); cursor: pointer; background: none; border: none; font-family: var(--font-sans); text-decoration: underline; }
+
+  .secondary-result-section { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid rgba(26,26,46,0.1); display: none; }
+
+  .secondary-result-section.visible { display: block; }
+
+  .secondary-title { font-family: var(--font-serif); font-size: 1.25rem; font-weight: 700; color: var(--near-black); margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+
+<div id="intro" class="screen active">
+  <div class="deco-circles">
+    <div class="deco-circle" style="width:400px;height:400px;background:var(--lavender);top:-100px;right:-100px;"></div>
+    <div class="deco-circle" style="width:300px;height:300px;background:var(--peach);bottom:-80px;left:-80px;"></div>
+    <div class="deco-circle" style="width:180px;height:180px;background:var(--mint);bottom:100px;right:80px;"></div>
+  </div>
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;">
+    <div class="intro-badge">Speaking Pattern Quiz</div>
+    <h1 class="intro-headline">Uncover your speaking pattern and <em>why it runs the show</em> without your permission</h1>
+    <p class="intro-sub">These are not personality types. They are performance patterns — responses you repeated often enough that they became automatic. This quiz will show you which pattern you default to under pressure, why it happens, and what needs to change.</p>
+    <div class="meta-row">
+      <div class="meta-pill"><span class="dot"></span> 10 questions</div>
+      <div class="meta-pill"><span class="dot"></span> 3 minutes</div>
+      <div class="meta-pill"><span class="dot"></span> Primary + secondary pattern</div>
+    </div>
+    <button class="btn-primary" onclick="startQuiz()">Find my pattern &nbsp;→</button>
+  </div>
+</div>
+
+<div id="quiz" class="screen">
+  <div class="quiz-top">
+    <div class="progress-label">
+      <span>Question <strong id="q-counter">1</strong> of 10</span>
+      <strong id="q-percent">0%</strong>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+  <div class="quiz-body">
+    <div class="q-number" id="q-number">Question 01</div>
+    <div class="q-question" id="q-question"></div>
+    <div class="answers-grid" id="answers-grid"></div>
+    <div class="next-row">
+      <button class="btn-next" id="btn-next" onclick="nextQuestion()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div id="result" class="screen">
+  <div class="result-hero">
+    <div class="deco-circles">
+      <div class="deco-circle" style="width:300px;height:300px;background:rgba(232,132,92,0.15);top:-60px;right:-60px;"></div>
+      <div class="deco-circle" style="width:200px;height:200px;background:rgba(124,107,196,0.15);bottom:-40px;left:-40px;"></div>
+    </div>
+    <div style="position:relative;z-index:1;">
+      <div class="result-eyebrow">Your speaking pattern</div>
+      <div class="result-label">Primary pattern</div>
+      <div class="result-pattern-name" id="primary-name"></div>
+      <div class="result-secondary-wrap" id="secondary-wrap">
+        <div class="result-label" style="margin-top:1.25rem;">Also present</div>
+        <div class="result-secondary-name" id="secondary-name"></div>
+      </div>
+    </div>
+  </div>
+  <div class="result-body">
+    <p class="pattern-intro-text" id="pattern-intro-text"></p>
+    <div class="result-section">
+      <div class="result-section-label">What it looks like</div>
+      <div class="behavior-box" id="behavior-text"></div>
+    </div>
+    <div class="result-section">
+      <div class="result-section-label">What you need to see</div>
+      <div class="gap-box" id="gap-text"></div>
+    </div>
+    <div class="bridge-box">
+      <div class="result-section-label">What needs to change</div>
+      <div class="bridge-text" id="bridge-text"></div>
+    </div>
+    <div class="secondary-result-section" id="secondary-section">
+      <div class="secondary-title" id="secondary-section-title"></div>
+      <div class="result-section">
+        <div class="result-section-label">What it looks like</div>
+        <div class="behavior-box" id="sec-behavior-text"></div>
+      </div>
+      <div class="result-section">
+        <div class="result-section-label">What you need to see</div>
+        <div class="gap-box" id="sec-gap-text"></div>
+      </div>
+      <div class="bridge-box">
+        <div class="result-section-label">What needs to change</div>
+        <div class="bridge-text" id="sec-bridge-text"></div>
+      </div>
+    </div>
+    <div class="cta-box">
+      <div class="cta-headline">30 days to train a new default</div>
+      <p class="cta-sub">The Unmuted Voice Challenge is where this pattern gets replaced — through structured performance training in English, under pressure, with people who understand exactly what you're dealing with.</p>
+      <a href="https://www.skool.com/zenfluent-inner-circle/about" target="_blank" class="btn-cta">Join the Unmuted Voice Challenge →</a>
+    </div>
+    <button class="retake-btn" onclick="retake()">Retake the quiz</button>
+  </div>
+</div>
+
+<script>
+const questions = [
+  { q: "You're about to speak in an important meeting. Which of these sounds most like you?", answers: [
+    { text: "I go over every possible objection in my head so I'm ready for anything.", p: "OE" },
+    { text: "I just want to get through it.", p: "RU" },
+    { text: "I wonder if I should say anything at all.", p: "IV" },
+    { text: "Everything I prepared feels like it's gone.", p: "FV" }
+  ]},
+  { q: "After you make a point in a conversation, what do you most often do?", answers: [
+    { text: "Add more — just to make sure they got it.", p: "OE" },
+    { text: "Say \"does that make sense?\" or \"sorry, maybe I'm wrong but—\"", p: "PA" },
+    { text: "Stop before I've fully finished what I wanted to say.", p: "AS" },
+    { text: "Move on quickly before anyone can react.", p: "RU" }
+  ]},
+  { q: "Which of these sounds most like you?", answers: [
+    { text: "I know what I want to say. I just can't find it when it matters.", p: "FV" },
+    { text: "I give too much context and by the end I've lost the room.", p: "OE" },
+    { text: "I stay general when I should be more specific.", p: "BV" },
+    { text: "I start well but something falls off before I finish.", p: "AS" }
+  ]},
+  { q: "Someone asks you a tough question in front of others. What happens?", answers: [
+    { text: "I answer and then keep going — adding more than I needed to.", p: "OE" },
+    { text: "I give a broad answer that doesn't really commit to anything.", p: "BV" },
+    { text: "My mind goes blank and I scramble to fill the silence.", p: "FV" },
+    { text: "I answer quietly and hope no one asks more.", p: "IV" }
+  ]},
+  { q: "When do you feel most like yourself in English?", answers: [
+    { text: "One-on-one, with no pressure and no audience.", p: "FV" },
+    { text: "When I've had time to prepare exactly what I'll say.", p: "OE" },
+    { text: "When no one is likely to challenge me.", p: "BV" },
+    { text: "When I feel comfortable with the people in the room.", p: "PA" }
+  ]},
+  { q: "Which of these have you heard — or said to yourself?", answers: [
+    { text: "\"You speak too fast\" or \"slow down.\"", p: "RU" },
+    { text: "\"What's your actual point?\" or \"can you be more specific?\"", p: "BV" },
+    { text: "\"You don't need to apologize\" or \"just say what you think.\"", p: "PA" },
+    { text: "\"Speak up\" or \"I couldn't hear you.\"", p: "IV" }
+  ]},
+  { q: "You're presenting and you can feel the room isn't engaged. What do you do?", answers: [
+    { text: "Speed up to get to the end faster.", p: "RU" },
+    { text: "Start adding more — maybe I wasn't clear enough.", p: "OE" },
+    { text: "Get quieter and take up less space.", p: "IV" },
+    { text: "Ask \"does this make sense so far?\"", p: "PA" }
+  ]},
+  { q: "After a high-stakes conversation in English, what's your most common reaction?", answers: [
+    { text: "I replay it and cringe at how much I said.", p: "OE" },
+    { text: "I feel like I said the right things but they didn't land.", p: "AS" },
+    { text: "I feel relieved it's over and embarrassed by how it went.", p: "FV" },
+    { text: "I wish I'd been more direct instead of playing it safe.", p: "BV" }
+  ]},
+  { q: "What would \"performing well in English\" actually mean for you?", answers: [
+    { text: "Getting through it without going blank.", p: "FV" },
+    { text: "Finishing what I started saying.", p: "AS" },
+    { text: "Not needing the room to confirm I'm on the right track.", p: "PA" },
+    { text: "Saying one clear thing instead of five careful ones.", p: "OE" }
+  ]},
+  { q: "When the pressure is highest, what happens to your English?", answers: [
+    { text: "The words come out fast but something's missing.", p: "RU" },
+    { text: "I keep it broad and safe.", p: "BV" },
+    { text: "I get smaller and quieter.", p: "IV" },
+    { text: "I go blank and wait for it to be over.", p: "FV" }
+  ]}
+];
+
+const patterns = {
+  OE: {
+    name: "The Over-Explainer",
+    intro: "You're the person who gives three answers when one would do — not because you don't know, but because you've been trained to cover all the ground before anyone questions you.",
+    behavior: "You give three answers when one would do. You cover your back before anyone even questions you. Under pressure, the explanations multiply — more context, more qualifications, more words — until the original point is buried somewhere underneath.",
+    gap: "More words do not create more credibility — they signal doubt. Every layer of over-explanation tells the room you don't trust yourself. The people who command attention say less, not more. Your problem is not that people don't understand you. It's that you don't trust them to.",
+    bridge: "You can speak well when you're comfortable. The problem is what happens under pressure — the explanation spiral kicks in automatically, and you lose the room before you've finished the first sentence. The Unmuted Voice Challenge trains you to perform differently when the stakes are high: to give the sharp, clear answer even when everything in you wants to keep going. That is a performance skill — and it's exactly what 30 days of targeted training builds."
+  },
+  RU: {
+    name: "The Rusher",
+    intro: "You speed through to get it over with. The words come out — but the authority stays behind.",
+    behavior: "You speed up to get through the discomfort faster. The words come out — but the authority stays behind. The faster you go, the more the room senses something is off, even if they can't name what.",
+    gap: "Speed is not efficiency — it's escape. When you rush, your authority doesn't follow you out. The room hears the words but loses the person saying them. Slowing down is not about pace. It's about deciding you're worth the pause.",
+    bridge: "When the pressure goes up, the rush gets worse — and no amount of preparation fixes it in the moment. What fixes it is training your performance under pressure so your delivery holds even when the stakes are high. The Unmuted Voice Challenge is 30 days of exactly that: building the muscle of speaking with presence and authority consistently — not just when you feel ready."
+  },
+  IV: {
+    name: "The Invisible Voice",
+    intro: "You become quieter and less assertive mid-sentence. The ending trails off. The point lands softer than you meant it to.",
+    behavior: "You become quieter and less assertive mid-sentence. The ending trails off. The point lands softer than you meant it to. The more important the moment, the more the voice pulls back.",
+    gap: "A voice that fades mid-sentence doesn't just lose volume — it loses conviction. The room interprets softness as uncertainty, even when you know exactly what you mean. You are not protecting yourself. You are making yourself easy to ignore.",
+    bridge: "The fading happens most when the pressure is highest — in the meetings that matter, with the people you most want to impress. That's not a volume problem you can fix by trying harder. It's a performance pattern that needs to be trained out, replaced with a new default. The Unmuted Voice Challenge gives you 30 days of structured practice so that consistent, full delivery becomes your baseline — not something you manage to do on a good day."
+  },
+  PA: {
+    name: "The Permission Asker",
+    intro: "\"Does that make sense?\" \"Sorry, maybe this is wrong but—\" Your tone goes up. Your certainty walks out.",
+    behavior: "\"Does that make sense?\" \"Sorry, maybe this is wrong but—\" Your tone goes up. Your certainty walks out. You seek confirmation mid-sentence, mid-point, mid-room — before anyone has even responded.",
+    gap: "\"Does that make sense?\" is not a question — it's an apology. Every time you seek confirmation mid-sentence, you hand your authority to whoever is listening. You are asking the room to grade you while you're still speaking. The most credible communicators don't ask if they're right. They make their point and let it stand.",
+    bridge: "Under pressure — in a high-stakes meeting, a pitch, a difficult conversation — the permission-seeking spikes. You know it's happening and you can't stop it. That's because it's a trained performance response, and it needs to be replaced with a different trained response. The Unmuted Voice Challenge is where that replacement happens: 30 days of practice that builds the ability to speak with authority in English consistently, regardless of who's in the room or how much is riding on it."
+  },
+  AS: {
+    name: "The Almost-Said-It Voice",
+    intro: "You trail off instead of landing the point. You had it — then let go of it right before the finish line.",
+    behavior: "You trail off instead of landing the point. You had it — then let go right before the finish line. The build-up is there. The conclusion disappears. The room is left waiting for something that never quite arrives.",
+    gap: "You built the whole case — then abandoned the verdict. The room remembers the landing, not the journey. If you don't land it, no one else will land it for you. The point you almost made doesn't count.",
+    bridge: "The collapse happens at the exact moment of maximum pressure — right when the point matters most. Knowing this doesn't stop it. What stops it is training your performance so that you can close under pressure, not just when it's easy. The Unmuted Voice Challenge is 30 days of building that closing ability in English — so when the moment comes, your delivery doesn't drop you at the finish line."
+  },
+  BV: {
+    name: "The Blurred Voice",
+    intro: "You stop being specific and start speaking in generalities. Safe ground — but it costs you credibility every time.",
+    behavior: "You stop being specific and start speaking in generalities. Safe ground — but it costs you credibility every time. The more pressure you feel, the broader and less precise the answer becomes.",
+    gap: "Vagueness feels like diplomacy but lands like weakness. Every time you retreat into generalities, the room stops trusting your precision — and precision is what makes you credible. You're not protecting yourself from being wrong. You're guaranteeing that nothing you say will be remembered.",
+    bridge: "The blur gets thickest under pressure — when you're presenting to leadership, fielding a tough question, or speaking in a second language in a high-stakes room. That's when the retreat to vagueness becomes automatic. The Unmuted Voice Challenge trains you to hold your specificity even then — to give the sharp, precise answer in English when it counts, not just when the pressure is low."
+  },
+  FV: {
+    name: "The Frozen Voice",
+    intro: "You either go completely silent and wait for someone to save you — or spiral: \"I forgot the word,\" nervous rambling, a few apologies, until someone else takes over.",
+    behavior: "You either go completely silent and wait for someone to save you — or spiral into \"I forgot the word,\" nervous rambling, a few apologies — until someone else takes over. Both paths end the same way: the conversation moves on without you.",
+    gap: "Freezing is not a language problem and it is not a memory problem. Your English doesn't disappear — your access to it does. The difference matters: because access can be trained. You are not someone who can't perform under pressure. You are someone who hasn't trained for it yet.",
+    bridge: "The freeze happens because high-pressure speaking in a second language is genuinely hard — and you've never had a structured way to train for it. The Unmuted Voice Challenge is that training. 30 days of progressive, supported practice that expands what you can handle under pressure — so that when the boardroom goes quiet and all eyes are on you, your performance doesn't collapse. You don't need to be saved. You need to be trained."
+  }
+};
+
+const LETTERS = ['A','B','C','D'];
+let current = 0, selected = null;
+let scores = { OE:0, RU:0, IV:0, PA:0, AS:0, BV:0, FV:0 };
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function startQuiz() {
+  scores = { OE:0, RU:0, IV:0, PA:0, AS:0, BV:0, FV:0 };
+  current = 0; selected = null;
+  renderQuestion();
+  show('quiz');
+}
+
+function renderQuestion() {
+  const q = questions[current];
+  selected = null;
+  document.getElementById('q-counter').textContent = current + 1;
+  document.getElementById('q-percent').textContent = Math.round((current / 10) * 100) + '%';
+  document.getElementById('progress-fill').style.width = ((current / 10) * 100) + '%';
+  document.getElementById('q-number').textContent = 'Question ' + String(current + 1).padStart(2,'0');
+  document.getElementById('q-question').textContent = q.q;
+  const grid = document.getElementById('answers-grid');
+  grid.innerHTML = '';
+  q.answers.forEach((a, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.innerHTML = `<span class="answer-ltr">${LETTERS[i]}</span><span>${a.text}</span>`;
+    btn.onclick = () => selectAnswer(i, a.p);
+    grid.appendChild(btn);
+  });
+  const nb = document.getElementById('btn-next');
+  nb.classList.remove('visible');
+  nb.textContent = current === 9 ? 'See my result →' : 'Next →';
+}
+
+function selectAnswer(idx, p) {
+  selected = { idx, p };
+  document.querySelectorAll('.answer-btn').forEach((btn, i) => btn.classList.toggle('selected', i === idx));
+  document.getElementById('btn-next').classList.add('visible');
+}
+
+function nextQuestion() {
+  if (!selected) return;
+  scores[selected.p]++;
+  current++;
+  if (current >= 10) showResult();
+  else renderQuestion();
+}
+
+function showResult() {
+  const sorted = Object.entries(scores).sort((a,b) => b[1]-a[1]);
+  const pk = sorted[0][0];
+  const sk = sorted[1][1] > 0 ? sorted[1][0] : null;
+  const p = patterns[pk];
+  document.getElementById('primary-name').textContent = p.name;
+  document.getElementById('pattern-intro-text').textContent = p.intro;
+  document.getElementById('behavior-text').textContent = p.behavior;
+  document.getElementById('gap-text').textContent = p.gap;
+  document.getElementById('bridge-text').textContent = p.bridge;
+  if (sk) {
+    const s = patterns[sk];
+    document.getElementById('secondary-wrap').classList.add('visible');
+    document.getElementById('secondary-name').textContent = s.name;
+    document.getElementById('secondary-section').classList.add('visible');
+    document.getElementById('secondary-section-title').textContent = 'Your secondary pattern: ' + s.name;
+    document.getElementById('sec-behavior-text').textContent = s.behavior;
+    document.getElementById('sec-gap-text').textContent = s.gap;
+    document.getElementById('sec-bridge-text').textContent = s.bridge;
+  } else {
+    document.getElementById('secondary-wrap').classList.remove('visible');
+    document.getElementById('secondary-section').classList.remove('visible');
+  }
+  show('result');
+}
+
+function retake() { startQuiz(); }
+</script>
+</body>
+</html>
